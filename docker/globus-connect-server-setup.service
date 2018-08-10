@@ -1,0 +1,7 @@
+[Unit]
+Description=Set up GCSv5 Endpoint
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/globus-connect-server-setup -v -c /etc/globus/globus-connect-server.conf
+[Install]
+WantedBy=multi-user.target
