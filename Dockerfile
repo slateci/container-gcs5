@@ -17,7 +17,7 @@ EXPOSE 80
 
 RUN systemctl enable httpd.service
 
-COPY globus-connect-server-setup.service /etc/systemd/system/
+COPY app/globus-connect-server-setup.service /etc/systemd/system/
 
 RUN systemctl enable globus-connect-server-setup.service
 
