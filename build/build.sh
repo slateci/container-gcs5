@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t slateci/gcsv5
+docker build -t slateci/gcsv5 .
