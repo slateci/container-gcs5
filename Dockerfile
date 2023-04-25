@@ -1,24 +1,13 @@
-FROM centos/systemd
+FROM rockylinux:9
+LABEL maintainer sthapa@uchicago.edu
 
-RUN yum install -y epel-release
-RUN yum update -y
+RUN dnf update -y
 
-RUN rpm --import https://downloads.globus.org/toolkit/gt6/stable/repo/rpm/RPM-GPG-KEY-Globus; \
-    yum localinstall -y https://downloads.globus.org/toolkit/globus-connect-server/globus-connect-server-repo-latest.noarch.rpm; \
-    yum-config-manager --enable Globus-Connect-Server-5-Stable -y; \
-    yum-config-manager --enable Globus-Toolkit-6-Stable -y; \
-    yum -y install globus-connect-server51; \
-    yum -y install httpd; \
-    yum clean all
+RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm &&  \
+     dnf install -y https://downloads.globus.org/globus-connect-server/stable/installers/repo/rpm/globus-repo-latest.noarch.rpm
+RUN dnf install -y 'dnf-command(config-manager)'
+RUN dnf install -y globus-connect-server54
 
-RUN chown -R gcsweb: /var/www/
 
-EXPOSE 80
+ENTRYPOINT ["/usr/local/bin/supervisord_startup.sh"]
 
-RUN systemctl enable httpd.service
-
-COPY app/globus-connect-server-setup.service /etc/systemd/system/
-
-RUN systemctl enable globus-connect-server-setup.service
-
-CMD ["/usr/sbin/init"]
