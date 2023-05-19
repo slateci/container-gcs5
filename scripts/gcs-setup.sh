@@ -242,6 +242,14 @@ trap '' HUP
 trap '' INT
 
 echo "GCS container successfully deployed"
+
+echo "Configuring endpoint"
+/usr/local/bin/configure-endpoint.sh
+if [[ $? -ne 0 ]];
+then 
+    echo "Error while configuring endpoint, exiting"
+fi
+
 while [ $shutting_down -eq 0 ]
 do
     check_process "Apache httpd" $httpd_pid || shutting_down=1

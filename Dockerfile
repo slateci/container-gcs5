@@ -7,7 +7,8 @@ RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.n
      dnf install -y https://downloads.globus.org/globus-connect-server/stable/installers/repo/rpm/globus-repo-latest.noarch.rpm
 RUN dnf install -y 'dnf-command(config-manager)'
 RUN dnf install -y globus-connect-server54 sudo
-COPY gcs-setup.sh /usr/local/bin/gcs-setup.sh
+COPY scripts/gcs-setup.sh /usr/local/bin/gcs-setup.sh
+COPY scripts/configure-endpoint.sh /usr/local/bin/gcs-setup.sh
 
 # These are the default ports in use by GCSv5.4. Currently, they can not be changed.
 #   443 : HTTPD service for GCS Manager API and HTTPS access to collections
