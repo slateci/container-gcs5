@@ -31,13 +31,10 @@
 # create a collection on the storage gateway to share
 #
 
-# login to the server
-globus-connect-server login localhost
-if [[ $? -ne 0 ]];
-then 
-   echo "Can't login to the local endpoint, exiting"
-   exit 1
-fi
+# Configure env variables for automated usage
+export GCS_CLI_CLIENT_ID=$GLOBUS_CLIENT_ID
+export GCS_CLI_CLIENT_SECRET=$GLOBUS_CLIENT_SECRET
+export GCS_CLI_ENDPOINT_ID=`cat /var/lib/globus-connect-server/info.json | awk  '/endpoint/ {print $2}'  | tr -d '[",]'`
 
 # are we using an identity mapping?
 if [[ -f /root/identity_mapping.json ]];
@@ -59,9 +56,9 @@ fi
 # create a storage gateway
 if [[ $STORAGE_TYPE -eq "posix" ]];
 then
-  globus-connect-server $STORAGE_CREATION_ARGS $COLLECTION_DOMAINS \ 
+  globus-connect-server $STORAGE_CREATION_ARGS $COLLECTION_DOMAINS \
     $ALLOW_USERS $DENY_USERS $POSIX_ALLOW_GROUPS $POSIX_DENY_GROUPS \
-    $IDENTITY_MAPPING_ARGS $RESTRICTION_ARGS > /tmp/gateway_id
+    $IDENTITY_MAPPING_ARGS $RESTRICTION_ARGS $COLLECTION_NAME
   if [[ $? -ne 0 ]];
   then
     echo "Gateway creation failed"
@@ -69,9 +66,9 @@ then
   fi
 elif [[ $STORAGE_TYPE -eq "ceph" ]];
 then
-  globus-connect-server $STORAGE_CREATION_ARGS $COLLECTION_DOMAINS \ 
-    $ALLOW_USERS $DENY_USERS $IDENTITY_MAPPING_ARGS \ 
-    $RESTRICTION_ARGS > /tmp/gateway_id
+  globus-connect-server $STORAGE_CREATION_ARGS $COLLECTION_DOMAINS \
+    $ALLOW_USERS $DENY_USERS $IDENTITY_MAPPING_ARGS \
+    $RESTRICTION_ARGS $COLLECTION_NAME
   if [[ $? -ne 0 ]];
   then
     echo "Gateway creation failed"
@@ -82,7 +79,7 @@ else
   exit 1
 fi
 
-GATEWAY_ID=`cat /tmp/gateway_id |  awk '$4 ~ /[0-9a-f-]{36}/ {print $4}'`
+GATEWAY_ID=`globus-connect-server storage-gateway list -F list`
 
 
 # create a collection

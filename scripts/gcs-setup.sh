@@ -13,6 +13,9 @@
 # $NODE_SETUP_ARGS = optional args for 'node setup' (ex. --ip-address)
 # $GLOBUS_SDK_ENVIRONMENT = optional development environment
 
+echo "Setting up passwd file"
+/usr/local/bin/setup-passwd.sh
+
 if [ -z "$GLOBUS_CLIENT_ID" ]
 then
     echo "Missing environment variable 'GLOBUS_CLIENT_ID'. Exiting."
@@ -243,11 +246,19 @@ trap '' INT
 
 echo "GCS container successfully deployed"
 
-echo "Configuring endpoint"
-/usr/local/bin/configure-endpoint.sh
-if [[ $? -ne 0 ]];
-then 
-    echo "Error while configuring endpoint, exiting"
+ENDPOINT_ID=`cat /var/lib/globus-connect-server/info.json | awk  '/endpoint/ {print $2}'  | tr -d '[",]'`
+echo "Globus endpoint deployed with id: $ENDPOINT_ID"
+
+if [[ ! -z $ENDPOINT_CONFIGURATION ]];
+then
+    echo "Configuring endpoint"
+    /usr/local/bin/configure-endpoint.sh
+    if [[ $? -ne 0 ]];
+    then 
+        echo "Error while configuring endpoint, exiting"
+    fi
+else
+    echo "Skipping endpoint configuration"
 fi
 
 while [ $shutting_down -eq 0 ]
