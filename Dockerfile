@@ -1,24 +1,20 @@
-FROM centos/systemd
+FROM rockylinux:9
+LABEL maintainer sthapa@uchicago.edu
 
-RUN yum install -y epel-release
-RUN yum update -y
+RUN dnf update -y
 
-RUN rpm --import https://downloads.globus.org/toolkit/gt6/stable/repo/rpm/RPM-GPG-KEY-Globus; \
-    yum localinstall -y https://downloads.globus.org/toolkit/globus-connect-server/globus-connect-server-repo-latest.noarch.rpm; \
-    yum-config-manager --enable Globus-Connect-Server-5-Stable -y; \
-    yum-config-manager --enable Globus-Toolkit-6-Stable -y; \
-    yum -y install globus-connect-server51; \
-    yum -y install httpd; \
-    yum clean all
+RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm &&  \
+     dnf install -y https://downloads.globus.org/globus-connect-server/stable/installers/repo/rpm/globus-repo-latest.noarch.rpm
+RUN dnf install -y 'dnf-command(config-manager)'
+RUN dnf install -y globus-connect-server54 sudo
+COPY scripts/gcs-setup.sh /usr/local/bin/gcs-setup.sh
+COPY scripts/setup-passwd.sh /usr/local/bin/setup-passwd.sh
+COPY scripts/configure-endpoint.sh /usr/local/bin/configure-endpoint.sh
 
-RUN chown -R gcsweb: /var/www/
+# These are the default ports in use by GCSv5.4. Currently, they can not be changed.
+#   443 : HTTPD service for GCS Manager API and HTTPS access to collections
+#  50000-51000 : Default port range for incoming data transfer tasks
+EXPOSE 443/tcp 50000-51000/tcp
 
-EXPOSE 80
+ENTRYPOINT ["/usr/local/bin/gcs-setup.sh"]
 
-RUN systemctl enable httpd.service
-
-COPY app/globus-connect-server-setup.service /etc/systemd/system/
-
-RUN systemctl enable globus-connect-server-setup.service
-
-CMD ["/usr/sbin/init"]
